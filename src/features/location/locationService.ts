@@ -1,9 +1,4 @@
-import { z } from "zod";
-
 const EARTH_RADIUS_METERS = 6_371_000;
-const REMEMBERED_LOCATION_KEY = "containers:remembered-location";
-const locationListeners = new Set<() => void>();
-let sessionLocation: RememberedLocation | null | undefined;
 
 export interface Coordinates {
   lat: number;
@@ -13,13 +8,6 @@ export interface Coordinates {
 export interface CurrentPosition extends Coordinates {
   accuracy: number;
   capturedAt: string;
-}
-
-export interface RememberedLocation extends Coordinates {
-  accuracy: number | null;
-  label: string;
-  source: "device" | "address";
-  savedAt: string;
 }
 
 export type LocationErrorCode =
@@ -39,15 +27,6 @@ export class LocationError extends Error {
     this.name = "LocationError";
   }
 }
-
-const RememberedLocationSchema = z.object({
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  accuracy: z.number().nonnegative().nullable(),
-  label: z.string().min(1),
-  source: z.enum(["device", "address"]),
-  savedAt: z.iso.datetime(),
-});
 
 export function getCurrentPosition(): Promise<CurrentPosition> {
   if (
@@ -141,15 +120,23 @@ export function findAddressMatch<T extends Coordinates & { address: string }>(
 ): T | null {
   const normalizedQuery = normalizeAddress(query);
   if (normalizedQuery.length < 3) return null;
+  const queryNumberTokens = getAddressNumberTokens(normalizedQuery);
 
   const matches = records
-    .map((record) => ({
-      record,
-      score: calculateAddressScore(
-        normalizeAddress(record.address),
-        normalizedQuery,
-      ),
-    }))
+    .map((record) => {
+      const normalizedAddress = normalizeAddress(record.address);
+      const addressNumberTokens = getAddressNumberTokens(normalizedAddress);
+      const hasMatchingNumber = queryNumberTokens.every((token) =>
+        addressNumberTokens.includes(token),
+      );
+
+      return {
+        record,
+        score: hasMatchingNumber
+          ? calculateAddressScore(normalizedAddress, normalizedQuery)
+          : 0,
+      };
+    })
     .filter(({ score }) => score >= 0.55)
     .sort(
       (left, right) =>
@@ -158,62 +145,6 @@ export function findAddressMatch<T extends Coordinates & { address: string }>(
     );
 
   return matches[0]?.record ?? null;
-}
-
-export function saveRememberedLocation(location: RememberedLocation): void {
-  const validated = RememberedLocationSchema.parse(location);
-  setSessionLocation(validated);
-  try {
-    getLocalStorage()?.setItem(
-      REMEMBERED_LOCATION_KEY,
-      JSON.stringify(validated),
-    );
-  } catch {
-    // Brak dostępu do pamięci nie powinien blokować bieżącego użycia lokalizacji.
-  }
-}
-
-export function getRememberedLocation(): RememberedLocation | null {
-  const storage = getLocalStorage();
-  if (!storage) return null;
-
-  try {
-    const value = storage.getItem(REMEMBERED_LOCATION_KEY);
-    if (!value) return null;
-
-    const parsed = RememberedLocationSchema.safeParse(JSON.parse(value));
-    if (parsed.success) return parsed.data;
-
-    storage.removeItem(REMEMBERED_LOCATION_KEY);
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-export function getSessionLocation(): RememberedLocation | null {
-  if (sessionLocation === undefined) {
-    sessionLocation = getRememberedLocation();
-  }
-  return sessionLocation;
-}
-
-export function setSessionLocation(location: RememberedLocation): void {
-  sessionLocation = RememberedLocationSchema.parse(location);
-  locationListeners.forEach((listener) => listener());
-}
-
-export function subscribeToLocation(listener: () => void): () => void {
-  locationListeners.add(listener);
-  return () => locationListeners.delete(listener);
-}
-
-export function clearRememberedLocation(): void {
-  try {
-    getLocalStorage()?.removeItem(REMEMBERED_LOCATION_KEY);
-  } catch {
-    // Lokalizacja nadal może być używana tylko w pamięci bieżącej sesji.
-  }
 }
 
 function mapGeolocationError(error: GeolocationPositionError): LocationError {
@@ -290,11 +221,19 @@ function levenshteinDistance(left: string, right: string): number {
 
 function normalizeAddress(value: string): string {
   return value
+    .replace(/ł/g, "l")
+    .replace(/Ł/g, "L")
     .normalize("NFKD")
     .replace(/\p{Diacritic}/gu, "")
     .toLocaleLowerCase("pl")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+function getAddressNumberTokens(value: string): string[] {
+  return value
+    .split(" ")
+    .filter((token) => /^\d+[a-z]?$/.test(token));
 }
 
 function assertCoordinates(coordinates: Coordinates): void {
@@ -312,12 +251,4 @@ function assertCoordinates(coordinates: Coordinates): void {
 
 function toRadians(value: number): number {
   return (value * Math.PI) / 180;
-}
-
-function getLocalStorage(): Storage | null {
-  try {
-    return typeof window === "undefined" ? null : window.localStorage;
-  } catch {
-    return null;
-  }
 }

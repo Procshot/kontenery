@@ -106,9 +106,15 @@ Po co najmniej jednej udanej synchronizacji zakładki `Dzisiaj`, `Następne` i
 lista punktów mapy działają offline. Same kafelki OpenStreetMap nadal wymagają
 internetu.
 
+Wyszukiwanie nowego, dowolnego adresu korzysta na żądanie z Nominatim. Najpierw
+sprawdzana jest lokalna baza, a wyniki online są ograniczane do Wrocławia i
+zapisywane w lokalnym cache. GPS nie jest wysyłany do zewnętrznych usług.
+
 ## Zmienne środowiskowe
 
 Przykładowe wartości znajdują się w `.env.example`:
 
 - `VITE_BASE_PATH` - bazowa ścieżka hostingu; lokalnie `/`,
-- `EKOSYSTEM_CACHE_TTL_MS` - opcjonalny czas ważności cache synchronizatora.
+- `EKOSYSTEM_CACHE_TTL_MS` - opcjonalny czas ważności cache synchronizatora,
+- `VITE_GEOCODING_URL` - opcjonalny endpoint geokodera zgodnego z API
+  wyszukiwania Nominatim.

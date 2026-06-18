@@ -1,16 +1,12 @@
-import { CalendarX2, LocateFixed, Search } from "lucide-react";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { CalendarX2, LocateFixed } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Link } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState";
 import { PageHeader } from "../../components/PageHeader";
-import { SyncStatusCard } from "../../components/SyncStatusCard";
 import { getActiveContainers } from "../../db/db";
-import {
-  getSessionLocation,
-  subscribeToLocation,
-} from "../location/locationService";
 import { todayInWarsaw } from "../../utils/date";
+import { LocationSetupCard } from "../location/LocationSetupCard";
+import { useUserLocation } from "../location/locationStore";
 import { ContainerList } from "./ContainerList";
 import {
   filterAndSortTodayContainers,
@@ -27,13 +23,8 @@ const radiusOptions: Array<{ value: RadiusFilter; label: string }> = [
 
 export function TodayPage() {
   const today = todayInWarsaw();
-  const [query, setQuery] = useState("");
   const [radius, setRadius] = useState<RadiusFilter>("all");
-  const location = useSyncExternalStore(
-    subscribeToLocation,
-    getSessionLocation,
-    () => null,
-  );
+  const location = useUserLocation();
   const activeContainers = useLiveQuery(
     () => getActiveContainers(today),
     [today],
@@ -44,9 +35,9 @@ export function TodayPage() {
         activeContainers ?? [],
         today,
         location,
-        { query, radius },
+        { radius },
       ),
-    [activeContainers, location, query, radius, today],
+    [activeContainers, location, radius, today],
   );
 
   return (
@@ -56,24 +47,9 @@ export function TodayPage() {
         title="Kontenery dostępne teraz"
         description="Aktualne wystawienia z lokalnej bazy. Lista działa również bez internetu."
       />
-      <SyncStatusCard />
+      <LocationSetupCard />
 
       <section className="today-filters" aria-label="Filtry kontenerów">
-        <label className="today-search" htmlFor="today-search">
-          <span>Adres lub osiedle</span>
-          <div>
-            <Search size={18} aria-hidden="true" />
-            <input
-              id="today-search"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Szukaj po adresie lub osiedlu"
-              autoComplete="off"
-            />
-          </div>
-        </label>
-
         <fieldset className="radius-filter">
           <legend>Promień wyszukiwania</legend>
           <div className="radius-filter__options">
@@ -108,8 +84,8 @@ export function TodayPage() {
             </span>
           ) : (
             <span>
-              Brak lokalizacji. Lista jest sortowana po dacie i adresie.{" "}
-              <Link to="/map">Ustaw lokalizację</Link>
+              Ustaw lokalizację, aby posortować kontenery według odległości.
+              Lista jest teraz sortowana po dacie i adresie.
             </span>
           )}
         </div>
@@ -138,12 +114,12 @@ export function TodayPage() {
             title={
               activeContainers.length === 0
                 ? "Brak danych na dzisiaj"
-                : "Brak wyników dla filtrów"
+                : "Brak kontenerów w wybranym promieniu"
             }
             description={
               activeContainers.length === 0
                 ? "Uruchom synchronizację albo sprawdź zakładkę z następnym wystawieniem."
-                : "Zwiększ promień albo zmień wyszukiwany adres lub osiedle."
+                : "Zwiększ promień albo wybierz wszystkie kontenery."
             }
           />
         )}

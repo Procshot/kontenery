@@ -43,7 +43,7 @@ describe("filterAndSortTodayContainers", () => {
       records,
       "2026-06-14",
       null,
-      { query: "", radius: "all" },
+      { radius: "all" },
     );
 
     assert.deepEqual(
@@ -59,22 +59,25 @@ describe("filterAndSortTodayContainers", () => {
       records,
       "2026-06-14",
       { lat: 51.1, lng: 17 },
-      { query: "", radius: 1 },
+      { radius: 1 },
     );
 
     assert.deepEqual(result.map(({ id }) => id), ["later-near"]);
     assert.ok((result[0].distanceMeters ?? Infinity) < 100);
   });
 
-  it("wyszukuje po osiedlu bez uwzględniania polskich znaków", () => {
+  it("bez lokalizacji nie crashuje i ignoruje promień", () => {
     const result = filterAndSortTodayContainers(
       records,
       "2026-06-14",
       null,
-      { query: "szczepin", radius: "all" },
+      { radius: 1 },
     );
 
-    assert.deepEqual(result.map(({ id }) => id), ["earlier-far"]);
+    assert.deepEqual(
+      result.map(({ id }) => id),
+      ["earlier-far", "later-near"],
+    );
   });
 });
 

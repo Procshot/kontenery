@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "sync:data": "tsx scripts/sync-ekosystem.ts",
     "validate:data": "tsx scripts/validate-containers.ts",
-    "test": "tsx --test src/features/location/locationService.test.ts src/features/containers/todayService.test.ts src/features/containers/nextService.test.ts",
+    "test": "tsx --test src/features/location/locationService.test.ts src/features/location/geocodingService.test.ts src/features/location/locationStore.test.ts src/features/location/locationArchitecture.test.ts src/features/containers/todayService.test.ts src/features/containers/nextService.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

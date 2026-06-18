@@ -2,17 +2,13 @@ import { CalendarSearch, LocateFixed } from "lucide-react";
 import {
   useMemo,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState";
 import { PageHeader } from "../../components/PageHeader";
 import { getUpcomingContainers } from "../../db/db";
-import {
-  getSessionLocation,
-  subscribeToLocation,
-} from "../location/locationService";
+import { useUserLocation } from "../location/locationStore";
 import { todayInWarsaw } from "../../utils/date";
 import {
   groupUpcomingContainers,
@@ -26,11 +22,7 @@ export function NextPage() {
   const today = todayInWarsaw();
   const [radiusEnabled, setRadiusEnabled] = useState(false);
   const [radiusKm, setRadiusKm] = useState<UpcomingRadiusKm>(5);
-  const location = useSyncExternalStore(
-    subscribeToLocation,
-    getSessionLocation,
-    () => null,
-  );
+  const location = useUserLocation();
   const upcomingContainers = useLiveQuery(
     () => getUpcomingContainers(today, 14),
     [today],
@@ -99,12 +91,13 @@ export function NextPage() {
           <LocateFixed size={17} aria-hidden="true" />
           {location ? (
             <span>
+              Lokalizacja używana do sortowania: <strong>{location.label}</strong>.
               W każdej dacie najbliższe kontenery są pokazane jako pierwsze.
             </span>
           ) : (
             <span>
-              Bez lokalizacji terminy są chronologiczne, a adresy alfabetyczne.{" "}
-              <Link to="/map">Ustaw lokalizację</Link>
+              Ustaw lokalizację w zakładce Dzisiaj, aby sortować według
+              odległości. <Link to="/">Przejdź do Dzisiaj</Link>
             </span>
           )}
         </div>

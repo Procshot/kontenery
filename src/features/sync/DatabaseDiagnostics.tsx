@@ -1,9 +1,22 @@
-import { Activity, CalendarRange, Database } from "lucide-react";
+import {
+  Activity,
+  CalendarRange,
+  CloudOff,
+  Database,
+  Wifi,
+} from "lucide-react";
 import { useSync } from "./SyncProvider";
 import { formatDate, formatDateTime } from "../../utils/date";
 
 export function DatabaseDiagnostics() {
-  const { dataVersion, dateMax, dateMin, lastSync, recordCount } = useSync();
+  const {
+    dataVersion,
+    dateMax,
+    dateMin,
+    isOnline,
+    lastSync,
+    recordCount,
+  } = useSync();
 
   return (
     <section className="panel" aria-labelledby="database-diagnostics-title">
@@ -13,6 +26,27 @@ export function DatabaseDiagnostics() {
       </div>
 
       <dl className="details-list">
+        <div>
+          <dt>
+            {isOnline ? (
+              <Wifi size={16} aria-hidden="true" />
+            ) : (
+              <CloudOff size={16} aria-hidden="true" />
+            )}{" "}
+            Status
+          </dt>
+          <dd>
+            <span
+              className={`connection-pill ${
+                isOnline
+                  ? "connection-pill--online"
+                  : "connection-pill--offline"
+              }`}
+            >
+              {isOnline ? "Online" : "Offline"}
+            </span>
+          </dd>
+        </div>
         <div>
           <dt>
             <Database size={16} aria-hidden="true" /> Rekordy

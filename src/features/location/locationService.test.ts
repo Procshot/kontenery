@@ -76,4 +76,13 @@ describe("findAddressMatch", () => {
 
     assert.equal(findAddressMatch(records, "Nieistniejąca 999"), null);
   });
+
+  it("nie dopasowuje podobnej ulicy z innym numerem budynku", () => {
+    const records = [
+      { address: "al. Dębowa 9a", lat: 51.08, lng: 17.01 },
+      { address: "al. Dębowa 20", lat: 51.081, lng: 17.011 },
+    ];
+
+    assert.equal(findAddressMatch(records, "Dębowa 2a"), null);
+  });
 });

@@ -20,6 +20,12 @@ interface ContainerCardProps {
   detailed?: boolean;
 }
 
+interface DetailedContainerCardProps {
+  container: ContainerRecord;
+  distanceMeters: number | null;
+  statusLabel: string;
+}
+
 export function ContainerCard({
   container,
   detailed = false,
@@ -42,6 +48,20 @@ export function ContainerCard({
     );
   }
 
+  return (
+    <DetailedContainerCard
+      container={container}
+      distanceMeters={container.distanceMeters}
+      statusLabel={`Zostało ${formatDaysRemaining(container.daysRemaining)}`}
+    />
+  );
+}
+
+export function DetailedContainerCard({
+  container,
+  distanceMeters,
+  statusLabel,
+}: DetailedContainerCardProps) {
   return (
     <article className="container-card container-card--detailed">
       <div className="container-card__header">
@@ -74,14 +94,12 @@ export function ContainerCard({
             <Ruler size={16} aria-hidden="true" />
             Odległość
           </dt>
-          <dd>{formatDistance(container.distanceMeters)}</dd>
+          <dd>{formatDistance(distanceMeters)}</dd>
         </div>
       </dl>
 
       <div className="container-card__footer">
-        <span className="days-badge">
-          Zostało {formatDaysRemaining(container.daysRemaining)}
-        </span>
+        <span className="days-badge">{statusLabel}</span>
         <a
           className="navigate-button"
           href={buildNavigationUrl(container.lat, container.lng)}

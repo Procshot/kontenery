@@ -458,38 +458,6 @@ p {
   gap: 10px;
 }
 
-.upcoming-card {
-  display: grid;
-  gap: 13px;
-}
-
-.upcoming-card__meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.upcoming-card__meta span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 10px;
-  border-radius: 12px;
-  color: var(--forest-900);
-  background: var(--surface-muted);
-  font-size: 0.76rem;
-  font-weight: 750;
-}
-
-.upcoming-card__meta svg {
-  flex: 0 0 auto;
-}
-
-.upcoming-card .navigate-button {
-  width: 100%;
-}
-
 .section-heading {
   justify-content: space-between;
 }
@@ -526,6 +494,7 @@ p {
 .container-card__header {
   display: flex;
   gap: 12px;
+  min-width: 0;
 }
 
 .container-card__icon,
@@ -541,7 +510,9 @@ p {
 }
 
 .container-card__body {
+  flex: 1 1 auto;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .container-card h3 {
@@ -579,11 +550,13 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .container-card__details dt {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
   gap: 6px;
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -594,18 +567,22 @@ p {
 }
 
 .container-card__details dd {
+  min-width: 0;
   margin: 0;
   color: var(--forest-950);
   font-size: 0.78rem;
   font-weight: 800;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .container-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 .days-badge {
@@ -618,6 +595,7 @@ p {
   background: #fff0c9;
   font-size: 0.75rem;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .navigate-button {
@@ -625,6 +603,8 @@ p {
   align-items: center;
   justify-content: center;
   gap: 7px;
+  max-width: 100%;
+  flex: 0 1 auto;
   min-height: 44px;
   padding: 10px 14px;
   border-radius: 13px;
@@ -1342,10 +1322,6 @@ p {
 }
 
 @media (max-width: 390px) {
-  .upcoming-card__meta {
-    grid-template-columns: 1fr;
-  }
-
   .container-card__details > div,
   .container-card__footer {
     align-items: flex-start;

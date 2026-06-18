@@ -134,6 +134,7 @@ export function NextPage() {
                     <UpcomingContainerCard
                       key={container.id}
                       container={container}
+                      daysFromToday={group.daysFromToday}
                     />
                   ))}
                 </div>
